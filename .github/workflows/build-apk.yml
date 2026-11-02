@@ -21,4 +21,3 @@ jobs:
         with:
           name: BRASFOOT-DUO-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-          
