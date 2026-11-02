@@ -1,23 +1,104 @@
 name: Build BRASFOOT DUO APK
+
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, principal ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Configurar estrutura correta do Android
+        run: |
+          # Limpar ficheiros soltos antigos da raiz se existirem
+          rm -rf app build.gradle settings.gradle
+          
+          # Criar pastas do projeto Android
+          mkdir -p app/src/main/assets app/src/main/java/com/douglas/brasfootduo app/src/main/res/mipmap
+          
+          # Criar build.gradle raiz
+          echo "plugins { id 'com.android.application' version '8.2.0' apply false }" > build.gradle
+          
+          # Criar settings.gradle
+          echo "rootProject.name = 'BrasfootDuo'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+          
+          # Criar build.gradle do app
+          cat << 'EOF' > app/build.gradle
+          plugins { id 'com.android.application' }
+          android {
+              namespace 'com.douglas.brasfootduo'
+              compileSdk 34
+              defaultConfig {
+                  applicationId 'com.douglas.brasfootduo'
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
+          }
+          EOF
+          
+          # Criar MainActivity.java
+          cat << 'EOF' > app/src/main/java/com/douglas/brasfootduo/MainActivity.java
+          package com.douglas.brasfootduo;
+          import android.os.Bundle;
+          import android.webkit.WebView;
+          import android.webkit.WebSettings;
+          import android.app.Activity;
+          public class MainActivity extends Activity {
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  WebView webView = new WebView(this);
+                  WebSettings ws = webView.getSettings();
+                  ws.setJavaScriptEnabled(true);
+                  ws.setDomStorageEnabled(true);
+                  webView.loadUrl("file:///android_asset/index.html");
+                  setContentView(webView);
+              }
+          }
+          EOF
+          
+          # Criar AndroidManifest.xml
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <application android:label="Brasfoot Duo" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher">
+                  <activity android:name=".MainActivity" android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+      - name: Copiar index.html para os assets
+        run: |
+          if [ -f "index.html" ]; then
+            cp index.html app/src/main/assets/index.html
+          else
+            echo "<h1 style='color:white;background:#0b130b;text-align:center;padding-top:50vh;'>Aviso: index.html raiz não encontrado.</h1>" > app/src/main/assets/index.html
+          fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
-      - name: Build debug APK
+          gradle-version: '8.5'
+
+      - name: Compilar APK de Debug
         run: gradle assembleDebug
+
       - uses: actions/upload-artifact@v4
         with:
           name: BRASFOOT-DUO-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          
