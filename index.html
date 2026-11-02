@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de 2 Técnicos - Brasfoot Mobile</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gramado: {
+                            900: '#04140c',
+                            800: '#0a291a',
+                            700: '#0f3d27',
+                            accent: '#10b981',
+                        },
+                        dourado: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #030a06;
+            color: #f3f4f6;
+        }
+        .cartao-vidro {
+            background: rgba(10, 41, 26, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(251, 191, 36, 0.4);
+            border-radius: 3px;
+        }
+        .glow-dourado {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-16 custom-scrollbar text-sm sm:text-base">
+
+    <!-- Cabeçalho -->
+    <header class="sticky top-0 z-50 cartao-vidro border-b border-dourado-500/30 px-4 py-3 shadow-xl">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-dourado-500 to-dourado-600 text-black rounded-xl font-bold shadow">
+                    <i data-lucide="trophy" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-dourado-400 via-green-300 to-emerald-400 bg-clip-text text-transparent">
+                        BRASFOOT DUO
+                    </h1>
+                    <p class="text-xs text-amber-200/70 font-medium">Gerenciador de 2 Técnicos</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="resetarCarreira()" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Resetar Dados da Carreira">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+
+        <!-- Abas de Navegação -->
+        <nav class="grid grid-cols-5 gap-1 p-1.5 bg-gramado-900/90 rounded-2xl border border-dourado-500/20">
+            <button onclick="trocarAba('painel')" id="aba-painel" class="btn-aba py-2 rounded-xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 transition text-dourado-400 bg-gramado-800 border border-dourado-500/30">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Painel</span>
+            </button>
+            <button onclick="trocarAba('rodada')" id="aba-rodada" class="btn-aba py-2 rounded-xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 transition text-gray-400 hover:text-gray-200">
+                <i data-lucide="play-circle" class="w-4 h-4"></i>
+                <span>Rodada</span>
+            </button>
+            <button onclick="trocarAba('confrontos')" id="aba-confrontos" class="btn-aba py-2 rounded-xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 transition text-gray-400 hover:text-gray-200">
+                <i data-lucide="swords" class="w-4 h-4"></i>
+                <span>Clássicos</span>
+            </button>
+            <button onclick="trocarAba('tecnicos')" id="aba-tecnicos" class="btn-aba py-2 rounded-xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 transition text-gray-400 hover:text-gray-200">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Técnicos</span>
+            </button>
+            <button onclick="trocarAba('tactics')" id="aba-tactics" class="btn-aba py-2 rounded-xl font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 transition text-gray-400 hover:text-gray-200">
+                <i data-lucide="clipboard-pen-line" class="w-4 h-4"></i>
+                <span>Mercado</span>
+            </button>
+        </nav>
+
+        <!-- SEÇÃO 1: PAINEL GERAL DE CONTROLE -->
+        <section id="sec-painel" class="conteudo-aba space-y-5">
+            
+            <!-- Placar de Títulos e Duelo Geral -->
+            <div class="cartao-vidro rounded-2xl p-5 border border-dourado-500/40 glow-dourado">
+                <h2 class="text-center font-black uppercase tracking-wider text-xs text-dourado-400 mb-4 flex items-center justify-center gap-1.5">
+                    <i data-lucide="crown" class="w-4 h-4"></i> Placar da Carreira Dupla
+                </h2>
+
+                <div class="grid grid-cols-3 items-center text-center gap-2">
+                    <!-- Técnico 1 -->
+                    <div class="space-y-1">
+                        <span id="painel-t1-nome" class="font-black text-blue-400 text-base sm:text-lg block truncate">Técnico 1</span>
+                        <span id="painel-t1-clube" class="text-xs text-gray-300 block truncate">Time A</span>
+                        <div class="pt-2">
+                            <span class="text-xs text-amber-300 block font-semibold">Títulos</span>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-dourado-400" id="painel-t1-titulos">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Versus / Estatística de Duelo -->
+                    <div class="space-y-2 border-x border-dourado-500/20 px-2 py-1">
+                        <span class="px-2.5 py-1 bg-dourado-500/20 text-dourado-300 rounded-full text-xs font-bold inline-block border border-dourado-500/30">
+                            VS
+                        </span>
+                        <div class="text-xs text-gray-300 font-semibold pt-1">Vitórias Diretas</div>
+                        <div class="text-lg sm:text-xl font-bold text-white">
+                            <span id="painel-vits-t1" class="text-blue-400">0</span> - <span id="painel-vits-t2" class="text-emerald-400">0</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400">Empates: <span id="painel-empates" class="text-gray-200">0</span></p>
+                    </div>
+
+                    <!-- Técnico 2 -->
+                    <div class="space-y-1">
+                        <span id="painel-t2-nome" class="font-black text-emerald-400 text-base sm:text-lg block truncate">Técnico 2</span>
+                        <span id="painel-t2-clube" class="text-xs text-gray-300 block truncate">Time B</span>
+                        <div class="pt-2">
+                            <span class="text-xs text-amber-300 block font-semibold">Títulos</span>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-dourado-400" id="painel-t2-titulos">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo da Rodada Atual -->
+            <div class="cartao-vidro rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-l-4 border-dourado-500">
+                <div class="space-y-1 text-center sm:text-left">
+                    <span class="text-xs text-dourado-400 font-bold uppercase tracking-wider">Situação da Carreira</span>
+                    <h3 class="text-lg font-bold text-white" id="painel-rodada-status">Rodada 1 - Vez do Técnico 1</h3>
+                    <p class="text-xs text-gray-300">Organize os turnos de jogo para que ninguém esqueça de escalar antes da partida.</p>
+                </div>
+                <button onclick="trocarAba('rodada')" class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-dourado-500 to-dourado-600 text-black font-extrabold rounded-xl shadow hover:brightness-110 transition flex items-center justify-center gap-2">
+                    Ir para Rodada <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- SEÇÃO 2: ASSISTENTE DE RODADA PASSO A PASSO -->
+        <section id="sec-rodada" class="conteudo-aba space-y-5 hidden">
+
+            <!-- Card Principal de Vez do Turno -->
+            <div id="cartao-vez-atual" class="cartao-vidro rounded-2xl p-5 border-l-4 border-blue-500 relative overflow-hidden shadow-2xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase font-bold tracking-widest text-amber-300 flex items-center gap-1.5">
+                        <i data-lucide="hourglass" class="w-4 h-4"></i> Passo a Passo da Rodada
+                    </span>
+                    <span id="badge-rodada" class="px-3 py-1 bg-dourado-500/20 text-dourado-300 border border-dourado-500/40 text-xs rounded-full font-bold">
+                        Rodada 1
+                    </span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 border-y border-white/10">
+                    <div class="flex items-center gap-3 text-center sm:text-left">
+                        <div id="avatar-turno" class="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl font-black border border-blue-500/40 shadow">
+                            T1
+                        </div>
+                        <div>
+                            <span class="text-xs text-gray-400 uppercase font-semibold">Agora jogando:</span>
+                            <h2 id="nome-turno-tecnico" class="text-xl sm:text-2xl font-black text-white">Técnico 1</h2>
+                            <p id="clube-turno-tecnico" class="text-xs text-dourado-400 font-bold">Time A</p>
+                        </div>
+                    </div>
+
+                    <button onclick="proximoTurno()" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-black font-black rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-base">
+                        Concluir Turno <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Lista de Checagem do Técnico -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Checklist do Treinador:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg bg-black/40 border border-white/5 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-700 text-emerald-500 focus:ring-0">
+                            <span>1. Tratar lesionados / suspensos</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg bg-black/40 border border-white/5 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-700 text-emerald-500 focus:ring-0">
+                            <span>2. Ajustar Tática & Substitutos</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg bg-black/40 border border-white/5 cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-700 text-emerald-500 focus:ring-0">
+                            <span>3. Jogar Partida no Brasfoot</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Notificação de Confronto Direto -->
+            <div class="cartao-vidro rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-amber-950/40 via-black to-emerald-950/40 border border-dourado-500/40">
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-dourado-500/20 text-dourado-400 rounded-xl">
+                        <i data-lucide="flame" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-dourado-300 text-sm sm:text-base">É dia de Clássico Direto?</h3>
+                        <p class="text-xs text-gray-300">Quando os 2 treinadores se enfrentam no campeonato.</p>
+                    </div>
+                </div>
+                <button onclick="abrirModalConfronto()" class="w-full sm:w-auto px-4 py-2.5 bg-dourado-500 hover:bg-dourado-400 text-black font-extrabold rounded-xl transition shadow flex items-center justify-center gap-2 text-xs uppercase tracking-wider">
+                    <i data-lucide="swords" class="w-4 h-4"></i> Anotador de Clássico
+                </button>
+            </div>
+
+        </section>
+
+        <!-- SEÇÃO 3: REGISTRO DE CONFRONTOS DIRETO E HISTÓRICO -->
+        <section id="sec-confrontos" class="conteudo-aba space-y-5 hidden">
+
+            <!-- Regras para Jogo Justo -->
+            <div class="cartao-vidro rounded-xl p-4 border border-amber-500/30 space-y-3">
+                <h3 class="font-bold text-dourado-400 flex items-center gap-2 text-sm">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i> Regras de Fair Play (Jogo Direto no Mesmo Celular)
+                </h3>
+                <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
+                    <li><strong class="text-white">Visitante Escala Primeiro:</strong> O técnico visitante faz sua escalação e confirma. Em seguida, o mandante escala o seu time.</li>
+                    <li><strong class="text-white">Substituições Automáticas:</strong> Configurem antes do jogo as substituições automáticas do Brasfoot para evitar mexer no celular do outro durante a partida ao vivo.</li>
+                    <li><strong class="text-white">Sem Olhar o Time Alheio:</strong> Não altere a tática do seu amigo enquanto ele estiver fora da tela!</li>
+                </ul>
+            </div>
+
+            <!-- Botão Adicionar e Lista de Histórico -->
+            <div class="cartao-vidro rounded-xl p-4 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-white text-sm sm:text-base flex items-center gap-2">
+                        <i data-lucide="history" class="w-5 h-5 text-dourado-400"></i> Histórico de Clássicos Diretos
+                    </h3>
+                    <button onclick="abrirModalConfronto()" class="text-xs px-3 py-1.5 bg-dourado-500/20 text-dourado-300 hover:bg-dourado-500/30 rounded-lg border border-dourado-500/40 font-bold flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Registrar Placar
+                    </button>
+                </div>
+
+                <div id="lista-historico-confrontos" class="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
+                    <!-- Registros dinâmicos -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SEÇÃO 4: CADASTRO E PERFIL DOS TÉCNICOS -->
+        <section id="sec-tecnicos" class="conteudo-aba space-y-5 hidden">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- Formulário Técnico 1 -->
+                <div class="cartao-vidro rounded-2xl p-5 border-t-4 border-blue-500 space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">1</div>
+                        <h3 class="font-extrabold text-blue-400">Perfil do Técnico 1</h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Nome do Treinador</label>
+                            <input type="text" id="input-t1-nome" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="Ex: Tite">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Nome do Clube</label>
+                            <input type="text" id="input-t1-clube" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="Ex: Flamengo">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Títulos Conquistados</label>
+                            <input type="number" id="input-t1-titulos" min="0" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-blue-500" value="0">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Formação Preferida</label>
+                                <select id="input-t1-formacao" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-blue-500 text-xs">
+                                    <option value="4-4-2">4-4-2</option>
+                                    <option value="4-3-3">4-3-3</option>
+                                    <option value="3-5-2">3-5-2</option>
+                                    <option value="4-5-1">4-5-1</option>
+                                    <option value="3-4-3">3-4-3</option>
+                                    <option value="5-3-2">5-3-2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Estilo de Jogo</label>
+                                <select id="input-t1-estilo" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-blue-500 text-xs">
+                                    <option value="Equilibrado">Equilibrado</option>
+                                    <option value="Ataque Total">Ataque Total</option>
+                                    <option value="Contra-Ataque">Contra-Ataque</option>
+                                    <option value="Defensivo">Defensivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulário Técnico 2 -->
+                <div class="cartao-vidro rounded-2xl p-5 border-t-4 border-emerald-500 space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">2</div>
+                        <h3 class="font-extrabold text-emerald-400">Perfil do Técnico 2</h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Nome do Treinador</label>
+                            <input type="text" id="input-t2-nome" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Ex: Abel Ferreira">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Nome do Clube</label>
+                            <input type="text" id="input-t2-clube" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="Ex: Palmeiras">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Títulos Conquistados</label>
+                            <input type="number" id="input-t2-titulos" min="0" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500" value="0">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Formação Preferida</label>
+                                <select id="input-t2-formacao" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-emerald-500 text-xs">
+                                    <option value="4-3-3">4-3-3</option>
+                                    <option value="4-4-2">4-4-2</option>
+                                    <option value="3-5-2">3-5-2</option>
+                                    <option value="4-5-1">4-5-1</option>
+                                    <option value="3-4-3">3-4-3</option>
+                                    <option value="5-3-2">5-3-2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Estilo de Jogo</label>
+                                <select id="input-t2-estilo" onchange="salvarConfiguracoes()" class="w-full bg-black/60 border border-white/10 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-emerald-500 text-xs">
+                                    <option value="Ataque Total">Ataque Total</option>
+                                    <option value="Equilibrado">Equilibrado</option>
+                                    <option value="Contra-Ataque">Contra-Ataque</option>
+                                    <option value="Defensivo">Defensivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- SEÇÃO 5: CADERNO TÁTICO E LISTA DE DESEJOS DE TRANSFERÊNCIA -->
+        <section id="sec-tactics" class="conteudo-aba space-y-5 hidden">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- Desejos Técnico 1 -->
+                <div class="cartao-vidro rounded-xl p-4 space-y-3 border border-blue-500/30">
+                    <h3 class="font-bold text-blue-400 text-sm flex items-center justify-between">
+                        <span><i data-lucide="user-plus" class="w-4 h-4 inline mr-1"></i> Lista de Desejos / Alvos (Técnico 1)</span>
+                    </h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-alvo-t1" class="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white" placeholder="Nome do jogador promissor...">
+                        <button onclick="adicionarAlvo(1)" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold">+</button>
+                    </div>
+                    <ul id="lista-alvos-t1" class="space-y-1.5 text-xs max-h-48 overflow-y-auto custom-scrollbar">
+                        <!-- Itens inseridos dinamicamente -->
+                    </ul>
+                </div>
+
+                <!-- Desejos Técnico 2 -->
+                <div class="cartao-vidro rounded-xl p-4 space-y-3 border border-emerald-500/30">
+                    <h3 class="font-bold text-emerald-400 text-sm flex items-center justify-between">
+                        <span><i data-lucide="user-plus" class="w-4 h-4 inline mr-1"></i> Lista de Desejos / Alvos (Técnico 2)</span>
+                    </h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="input-alvo-t2" class="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white" placeholder="Nome do jogador promissor...">
+                        <button onclick="adicionarAlvo(2)" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold">+</button>
+                    </div>
+                    <ul id="lista-alvos-t2" class="space-y-1.5 text-xs max-h-48 overflow-y-auto custom-scrollbar">
+                        <!-- Itens inseridos dinamicamente -->
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Dicas táticas para o Brasfoot -->
+            <div class="cartao-vidro rounded-xl p-4 space-y-3 border border-dourado-500/30 bg-dourado-500/5">
+                <h3 class="font-bold text-dourado-300 text-sm flex items-center gap-2">
+                    <i data-lucide="lightbulb" class="w-4 h-4"></i> Dicas de Ouro para 2 Técnicos no Brasfoot Mobile
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-gray-300">
+                    <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+                        <strong class="text-dourado-400 block mb-1">Pacto de Leilão Mercado</strong>
+                        <p>Evitem cobrir os lances um do outro até a exaustão financeira. Definir prioridade por posição evita falência mútua.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-black/40 border border-white/5">
+                        <strong class="text-dourado-400 block mb-1">Salvar o Jogo Frequentemente</strong>
+                        <p>No Brasfoot Mobile, o sistema pode fechar em segundo plano. Sempre salvem o jogo após cada partida rodada!</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Modal para Registrar Resultado do Clássico Direto -->
+    <div id="modal-confronto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="cartao-vidro w-full max-w-md rounded-2xl p-5 border border-dourado-500/50 space-y-4 relative">
+            <button onclick="fecharModalConfronto()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+                <i data-lucide="swords" class="w-5 h-5 text-dourado-400"></i> Registrar Placar do Clássico
+            </h3>
+
+            <div class="space-y-3 py-2">
+                <div class="grid grid-cols-2 gap-3 items-center">
+                    <div>
+                        <label id="modal-rotulo-t1" class="block text-xs font-bold text-blue-400 mb-1 truncate">Técnico 1</label>
+                        <input type="number" id="modal-gols-t1" min="0" value="0" class="w-full bg-black/80 border border-white/20 rounded-xl px-3 py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label id="modal-rotulo-t2" class="block text-xs font-bold text-emerald-400 mb-1 truncate">Técnico 2</label>
+                        <input type="number" id="modal-gols-t2" min="0" value="0" class="w-full bg-black/80 border border-white/20 rounded-xl px-3 py-2 text-center text-2xl font-black text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Competição / Descrição da Partida</label>
+                    <input type="text" id="modal-observacao-partida" class="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" placeholder="Ex: Final da Copa do Brasil / Brasileirão Turno">
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="fecharModalConfronto()" class="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-bold text-xs">Cancelar</button>
+                <button onclick="salvarPartidaConfronto()" class="flex-1 py-2.5 bg-dourado-500 hover:bg-dourado-400 text-black font-extrabold rounded-xl text-xs shadow">Salvar Resultado</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica em JavaScript com Persistência em localStorage -->
+    <script>
+        // Estado da Aplicação
+        let estadoApp = {
+            rodadaAtual: 1,
+            tecnicoDoTurno: 1, // 1 ou 2
+            t1: {
+                nome: "Técnico 1",
+                clube: "Flamengo",
+                titulos: 0,
+                formacao: "4-4-2",
+                estilo: "Equilibrado",
+                alvos: []
+            },
+            t2: {
+                nome: "Técnico 2",
+                clube: "Palmeiras",
+                titulos: 0,
+                formacao: "4-3-3",
+                estilo: "Ataque Total",
+                alvos: []
+            },
+            historicoConfrontos: []
+        };
+
+        // Inicialização
+        window.onload = function() {
+            carregarDadosSalvos();
+            atualizarInterface();
+            lucide.createIcons();
+        };
+
+        // Carregar do localStorage
+        function carregarDadosSalvos() {
+            const dadosSalvos = localStorage.getItem('brasfoot_duo_dados_v2');
+            if (dadosSalvos) {
+                try {
+                    estadoApp = JSON.parse(dadosSalvos);
+                } catch(e) {
+                    console.error("Erro ao carregar dados salvos", e);
+                }
+            }
+        }
+
+        // Salvar no localStorage
+        function salvarEstado() {
+            localStorage.setItem('brasfoot_duo_dados_v2', JSON.stringify(estadoApp));
+            atualizarInterface();
+        }
+
+        // Navegação entre abas
+        function trocarAba(idAba) {
+            document.querySelectorAll('.conteudo-aba').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.btn-aba').forEach(btn => {
+                btn.classList.remove('text-dourado-400', 'bg-gramado-800', 'border', 'border-dourado-500/30');
+                btn.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`sec-${idAba}`).classList.remove('hidden');
+            const abaAtiva = document.getElementById(`aba-${idAba}`);
+            abaAtiva.classList.remove('text-gray-400');
+            abaAtiva.classList.add('text-dourado-400', 'bg-gramado-800', 'border', 'border-dourado-500/30');
+        }
+
+        // Atualizar toda a UI
+        function atualizarInterface() {
+            // Formulários de Técnicos
+            document.getElementById('input-t1-nome').value = estadoApp.t1.nome;
+            document.getElementById('input-t1-clube').value = estadoApp.t1.clube;
+            document.getElementById('input-t1-titulos').value = estadoApp.t1.titulos;
+            document.getElementById('input-t1-formacao').value = estadoApp.t1.formacao;
+            document.getElementById('input-t1-estilo').value = estadoApp.t1.estilo;
+
+            document.getElementById('input-t2-nome').value = estadoApp.t2.nome;
+            document.getElementById('input-t2-clube').value = estadoApp.t2.clube;
+            document.getElementById('input-t2-titulos').value = estadoApp.t2.titulos;
+            document.getElementById('input-t2-formacao').value = estadoApp.t2.formacao;
+            document.getElementById('input-t2-estilo').value = estadoApp.t2.estilo;
+
+            // Painel Geral
+            document.getElementById('painel-t1-nome').innerText = estadoApp.t1.nome || "Técnico 1";
+            document.getElementById('painel-t1-clube').innerText = estadoApp.t1.clube || "Time A";
+            document.getElementById('painel-t1-titulos').innerText = estadoApp.t1.titulos;
+
+            document.getElementById('painel-t2-nome').innerText = estadoApp.t2.nome || "Técnico 2";
+            document.getElementById('painel-t2-clube').innerText = estadoApp.t2.clube || "Time B";
+            document.getElementById('painel-t2-titulos').innerText = estadoApp.t2.titulos;
+
+            // Estatísticas dos Duelos Diretos
+            let vitsT1 = 0, vitsT2 = 0, empates = 0;
+            estadoApp.historicoConfrontos.forEach(jogo => {
+                if (jogo.g1 > jogo.g2) vitsT1++;
+                else if (jogo.g2 > jogo.g1) vitsT2++;
+                else empates++;
+            });
+
+            document.getElementById('painel-vits-t1').innerText = vitsT1;
+            document.getElementById('painel-vits-t2').innerText = vitsT2;
+            document.getElementById('painel-empates').innerText = empates;
+
+            // Turno da Rodada
+            const ehTecnico1 = estadoApp.tecnicoDoTurno === 1;
+            const tecAtivo = ehTecnico1 ? estadoApp.t1 : estadoApp.t2;
+
+            document.getElementById('painel-rodada-status').innerText = `Rodada ${estadoApp.rodadaAtual} - Vez de ${tecAtivo.nome}`;
+
+            const cartaoVez = document.getElementById('cartao-vez-atual');
+            cartaoVez.className = `cartao-vidro rounded-2xl p-5 border-l-4 ${ehTecnico1 ? 'border-blue-500' : 'border-emerald-500'} relative overflow-hidden shadow-2xl space-y-4`;
+
+            const avatarTurno = document.getElementById('avatar-turno');
+            avatarTurno.className = `w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black border shadow ${ehTecnico1 ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'}`;
+            avatarTurno.innerText = ehTecnico1 ? 'T1' : 'T2';
+
+            document.getElementById('nome-turno-tecnico').innerText = tecAtivo.nome;
+            document.getElementById('clube-turno-tecnico').innerText = tecAtivo.clube;
+            document.getElementById('badge-rodada').innerText = `Rodada ${estadoApp.rodadaAtual}`;
+
+            // Histórico de Confrontos
+            const listaHistorico = document.getElementById('lista-historico-confrontos');
+            if (estadoApp.historicoConfrontos.length === 0) {
+                listaHistorico.innerHTML = `<p class="text-xs text-gray-500 text-center py-6">Nenhum confronto direto entre os 2 técnicos foi registrado ainda.</p>`;
+            } else {
+                listaHistorico.innerHTML = estadoApp.historicoConfrontos.slice().reverse().map((j, idx) => `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-black/50 border border-white/5 text-xs">
+                        <div class="space-y-0.5">
+                            <span class="text-dourado-400 font-bold block">${j.obs || 'Clássico Direto'}</span>
+                            <span class="text-gray-400 text-[10px]">Partida #${estadoApp.historicoConfrontos.length - idx}</span>
+                        </div>
+                        <div class="font-black text-sm px-4 py-1.5 rounded-lg bg-black/80 border border-dourado-500/30 text-white">
+                            <span class="text-blue-400">${j.g1}</span> <span class="text-gray-500 mx-1">x</span> <span class="text-emerald-400">${j.g2}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Renderizar Alvos de Transferência
+            renderizarAlvos(1);
+            renderizarAlvos(2);
+        }
+
+        // Avançar Turno ou Rodada
+        function proximoTurno() {
+            if (estadoApp.tecnicoDoTurno === 1) {
+                estadoApp.tecnicoDoTurno = 2;
+            } else {
+                estadoApp.tecnicoDoTurno = 1;
+                estadoApp.rodadaAtual += 1;
+            }
+            salvarEstado();
+        }
+
+        // Salvar dados editados nos formulários
+        function salvarConfiguracoes() {
+            estadoApp.t1.nome = document.getElementById('input-t1-nome').value.trim() || "Técnico 1";
+            estadoApp.t1.clube = document.getElementById('input-t1-clube').value.trim() || "Time A";
+            estadoApp.t1.titulos = parseInt(document.getElementById('input-t1-titulos').value) || 0;
+            estadoApp.t1.formacao = document.getElementById('input-t1-formacao').value;
+            estadoApp.t1.estilo = document.getElementById('input-t1-estilo').value;
+
+            estadoApp.t2.nome = document.getElementById('input-t2-nome').value.trim() || "Técnico 2";
+            estadoApp.t2.clube = document.getElementById('input-t2-clube').value.trim() || "Time B";
+            estadoApp.t2.titulos = parseInt(document.getElementById('input-t2-titulos').value) || 0;
+            estadoApp.t2.formacao = document.getElementById('input-t2-formacao').value;
+            estadoApp.t2.estilo = document.getElementById('input-t2-estilo').value;
+
+            salvarEstado();
+        }
+
+        // Modal de Registros de Partida
+        function abrirModalConfronto() {
+            document.getElementById('modal-rotulo-t1').innerText = `${estadoApp.t1.nome} (${estadoApp.t1.clube})`;
+            document.getElementById('modal-rotulo-t2').innerText = `${estadoApp.t2.nome} (${estadoApp.t2.clube})`;
+            document.getElementById('modal-observacao-partida').value = `Rodada ${estadoApp.rodadaAtual}`;
+            document.getElementById('modal-confronto').classList.remove('hidden');
+        }
+
+        function fecharModalConfronto() {
+            document.getElementById('modal-confronto').classList.add('hidden');
+        }
+
+        function salvarPartidaConfronto() {
+            const g1 = parseInt(document.getElementById('modal-gols-t1').value) || 0;
+            const g2 = parseInt(document.getElementById('modal-gols-t2').value) || 0;
+            const obs = document.getElementById('modal-observacao-partida').value.trim() || `Rodada ${estadoApp.rodadaAtual}`;
+
+            estadoApp.historicoConfrontos.push({ g1, g2, obs, data: new Date().toLocaleDateString('pt-BR') });
+            salvarEstado();
+            fecharModalConfronto();
+        }
+
+        // Gerenciamento de Alvos de Transferências
+        function adicionarAlvo(numTecnico) {
+            const input = document.getElementById(`input-alvo-t${numTecnico}`);
+            const valor = input.value.trim();
+            if (valor) {
+                estadoApp[`t${numTecnico}`].alvos.push(valor);
+                input.value = '';
+                salvarEstado();
+            }
+        }
+
+        function removerAlvo(numTecnico, index) {
+            estadoApp[`t${numTecnico}`].alvos.splice(index, 1);
+            salvarEstado();
+        }
+
+        function renderizarAlvos(numTecnico) {
+            const lista = document.getElementById(`lista-alvos-t${numTecnico}`);
+            const alvos = estadoApp[`t${numTecnico}`].alvos || [];
+            if (alvos.length === 0) {
+                lista.innerHTML = `<li class="text-gray-500 italic py-1">Nenhum jogador na lista de alvos.</li>`;
+            } else {
+                lista.innerHTML = alvos.map((alvo, idx) => `
+                    <li class="flex items-center justify-between p-2 rounded-xl bg-black/50 border border-white/5">
+                        <span class="text-gray-200 font-medium">${alvo}</span>
+                        <button onclick="removerAlvo(${numTecnico}, ${idx})" class="text-red-400 hover:text-red-300 p-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </li>
+                `).join('');
+            }
+        }
+
+        // Resetar toda a carreira
+        function resetarCarreira() {
+            if (confirm("Deseja zerar todas as estatísticas e histórico desta carreira de 2 técnicos?")) {
+                localStorage.removeItem('brasfoot_duo_dados_v2');
+                estadoApp = {
+                    rodadaAtual: 1,
+                    tecnicoDoTurno: 1,
+                    t1: { nome: "Técnico 1", clube: "Flamengo", titulos: 0, formacao: "4-4-2", estilo: "Equilibrado", alvos: [] },
+                    t2: { nome: "Técnico 2", clube: "Palmeiras", titulos: 0, formacao: "4-3-3", estilo: "Ataque Total", alvos: [] },
+                    historicoConfrontos: []
+                };
+                atualizarInterface();
+            }
+        }
+    </script>
+</body>
+</html>
